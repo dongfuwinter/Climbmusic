@@ -7,7 +7,7 @@ const path = require('path');
     const findChromePath = await findChrome({});
     const executablePath = findChromePath.executablePath;
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         executablePath,
         defaultViewport: {
             width: 1519,
