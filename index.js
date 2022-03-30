@@ -74,6 +74,7 @@ const path = require('path');
     })
     await page.close()
     for (let i = 0; i < MusiclisList.length; i++) {
+        // 把 MusiclisList[0] 中的 [0] 改为 1 或 其他的数字 ... 即可爬取   注：不可超过32
         if (MusiclisList[0] === MusiclisList[i]) {
             MusicDetail(MusiclisList[i].url, MusiclisList[i].description)
             break
