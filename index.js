@@ -14,7 +14,7 @@ const path = require('path');
             height: 697
         }
     });
-    const Music = async (url, title, singer) => {
+    const Music = async (url, titleSinger) => {
         const page = await browser.newPage()
         await page.goto(url, { timeout: 0 })
         const MusicUrl = await page.evaluate(() => {
@@ -23,18 +23,19 @@ const path = require('path');
             return MusicUrl
         })
         await page.close()
+        let list  = titleSinger.split(' - ')
         const extName = path.extname(MusicUrl)
-        const ws = fs.createWriteStream(`./music/${title}${singer}${extName}`)
+        const ws = fs.createWriteStream(`./music/${list[1]}--${list[0]}${extName}`)
         axios.get(MusicUrl, { responseType: 'stream' }).then(res => {
             res.data.pipe(ws)
             res.data.on('close', () => {
-                console.log('已下载：' + title + singer + extName);
+                console.log('已下载：' + list[1] + '--' + list[0] + extName);
                 ws.close()
             })
         })
 
     }
-    const MusicDetail = async (url, description) => {
+    const MusicDetail = async (url) => {
         const page = await browser.newPage()
         await page.goto(url)
         const MusicList = await page.evaluate(() => {
@@ -42,15 +43,14 @@ const path = require('path');
             let MusicList = new Array()
             MusicDetailList.forEach(item => {
                 const url = item.querySelector('a').href
-                const title = item.querySelector('a').innerText
-                const singer = item.querySelector('a span').innerHTML
-                MusicList.push({ title, singer, url })
+                const titleSinger = item.querySelector('a').title
+                MusicList.push({ titleSinger, url })
             })
             return MusicList
         })
         await page.close()
         MusicList.forEach(item => {
-            Music(item.url, item.title, item.singer)
+            Music(item.url, item.titleSinger)
         })
     }
 
@@ -63,11 +63,7 @@ const path = require('path');
             const Musiclis = item.querySelectorAll('ul li')
             Musiclis.forEach(Musiclisitem => {
                 const url = Musiclisitem.querySelector('a').href
-                const description = Musiclisitem.querySelector('a').innerText
-                MusiclisList.push({
-                    description,
-                    url
-                })
+                MusiclisList.push(url)
             })
         })
         return MusiclisList
@@ -76,7 +72,7 @@ const path = require('path');
     for (let i = 0; i < MusiclisList.length; i++) {
         // 把 MusiclisList[0] 中的 [0] 改为 1 或 其他的数字 ... 即可爬取   注：不可超过32
         if (MusiclisList[0] === MusiclisList[i]) {
-            MusicDetail(MusiclisList[i].url, MusiclisList[i].description)
+            MusicDetail(MusiclisList[i], MusiclisList[i])
             break
         }
     }
